@@ -1,0 +1,165 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ book.title }}{% endblock title %}
+
+{% block content %}
+<nav class="text-xs text-slate-400 mb-8 flex flex-wrap gap-2">
+    <a href="{% url 'index' %}" class="hover:text-accent transition">Startseite</a>
+    <span>/</span>
+    <a href="{% url 'book_list' %}" class="hover:text-accent transition">Bücher</a>
+    <span>/</span>
+    <span class="text-slate-600">{{ book.title }}</span>
+</nav>
+
+<div class="grid lg:grid-cols-12 gap-8 lg:gap-12 mb-14">
+    <div class="lg:col-span-4">
+        {% if book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                 class="w-full rounded-xl border border-border-custom shadow-xl object-cover">
+        {% else %}
+            <div class="w-full h-96 rounded-xl border border-border-custom bg-slate-100 flex items-center justify-center text-slate-400 text-sm">
+                Kein Foto
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="lg:col-span-8">
+        {% if book.category %}
+            <p class="text-xs uppercase tracking-[0.2em] text-accent mb-3">{{ book.category.name }}</p>
+        {% endif %}
+        <h1 class="font-serif text-4xl sm:text-5xl leading-tight mb-3">{{ book.title }}</h1>
+        <p class="text-sm text-slate-500 mb-6">{{ book.author }}</p>
+
+        {% if book.average_rating %}
+            <div class="inline-flex items-center gap-2 mb-6 text-sm">
+                <span class="text-amber-500">★</span>
+                <span class="font-medium">{{ book.average_rating|floatformat:1 }}</span>
+                <span class="text-slate-400">/ 5</span>
+            </div>
+        {% endif %}
+
+        <div class="card p-6">
+            <h2 class="font-serif text-lg mb-3">Beschreibung</h2>
+            <div class="text-slate-600 text-sm leading-relaxed text-justify">
+                {{ book.description|linebreaks }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="grid md:grid-cols-2 gap-6 mb-14">
+
+    <section class="card p-6">
+        <h2 class="font-serif text-xl mb-1">Zum Verkauf anbieten</h2>
+        <p class="text-xs text-slate-400 mb-5">Ihr Exemplar anderen Lesern anbieten.</p>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {% for field in listing_form %}
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <button type="submit" name="submit_listing" class="btn-primary w-full">Anzeige veröffentlichen</button>
+        </form>
+    </section>
+
+    <section class="card p-6">
+        <h2 class="font-serif text-xl mb-1">Eine Rezension hinterlassen</h2>
+        <p class="text-xs text-slate-400 mb-5">Eine Rezension pro Buch und Leser.</p>
+
+        {% if has_reviewed %}
+            <div class="rounded-lg border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm text-slate-600">
+                Sie haben bereits eine Rezension für dieses Buch abgegeben.
+            </div>
+        {% else %}
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                {% for field in review_form %}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ field.label }}</label>
+                        {{ field }}
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+                <button type="submit" name="submit_review" class="btn-primary w-full">Rezension senden</button>
+            </form>
+        {% endif %}
+    </section>
+</div>
+{% else %}
+<div class="card p-8 text-center mb-14">
+    <p class="text-sm text-slate-500 mb-4">
+        Melden Sie sich an, um eine Rezension zu schreiben oder das Buch zum Verkauf anzubieten.
+    </p>
+    <div class="flex justify-center gap-3">
+        <a href="{% url 'login' %}" class="btn-primary">Anmelden</a>
+        <a href="{% url 'signup' %}" class="btn-ghost">Registrieren</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="grid md:grid-cols-2 gap-6">
+
+    <section class="card overflow-hidden">
+        <header class="px-6 py-4 border-b border-border-custom">
+            <h2 class="font-serif text-lg">Von Nutzern kaufen</h2>
+        </header>
+
+        <div class="divide-y divide-border-custom">
+            {% for l in listings %}
+            <div class="px-6 py-4 flex items-start justify-between gap-4">
+                <div>
+                    <p class="text-lg font-medium text-accent">{{ l.price }} €</p>
+                    <span class="inline-block mt-1 text-[11px] uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-500">
+                        {{ l.get_condition_display }}
+                    </span>
+                    <p class="text-xs text-slate-400 mt-2">Verkäufer: {{ l.seller.username }}</p>
+                    {% if l.description %}
+                        <p class="text-xs text-slate-500 mt-2 italic">{{ l.description }}</p>
+                    {% endif %}
+                </div>
+
+                {% if user.is_authenticated %}
+                    {% if l.seller != request.user %}
+                        <a href="{% url 'chat' l.seller.id %}" class="btn-outline shrink-0">Nachricht</a>
+                    {% else %}
+                        <span class="shrink-0 text-[11px] text-slate-400 border border-border-custom rounded px-2 py-1">Ihre Anzeige</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="px-6 py-12 text-center text-sm text-slate-400">Noch keine Verkaufsanzeigen vorhanden.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="card overflow-hidden">
+        <header class="px-6 py-4 border-b border-border-custom">
+            <h2 class="font-serif text-lg">Leserrezensionen</h2>
+        </header>
+
+        <div class="divide-y divide-border-custom">
+            {% for r in reviews %}
+            <article class="px-6 py-4">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium">{{ r.author.username }}</p>
+                        <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">{{ r.text }}</p>
+                        <p class="text-xs text-slate-400 mt-2">{{ r.created_at|date:"d.m.Y" }}</p>
+                    </div>
+                    <span class="shrink-0 text-xs font-medium text-amber-600 bg-amber-50 rounded px-2 py-1">
+                        ★ {{ r.rating }}/5
+                    </span>
+                </div>
+            </article>
+            {% empty %}
+            <p class="px-6 py-12 text-center text-sm text-slate-400">Hier ist es noch leer.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock content %}

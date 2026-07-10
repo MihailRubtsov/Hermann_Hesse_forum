@@ -1,0 +1,96 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Bibliothek der Werke{% endblock title %}
+
+{% block content %}
+<div class="mb-8">
+    <p class="text-xs uppercase tracking-[0.2em] text-accent mb-2">Werke</p>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <h1 class="font-serif text-3xl sm:text-4xl">Bibliothek</h1>
+        <span class="text-sm text-slate-500">{{ total_count }} Bücher</span>
+    </div>
+</div>
+
+<form method="get" class="card p-4 mb-8 flex flex-col sm:flex-row gap-3">
+    <input type="search" name="q" value="{{ query }}" class="form-input sm:flex-1"
+           placeholder="Titel oder Beschreibung durchsuchen …">
+
+    <select name="category" class="form-input sm:w-56">
+        <option value="">Alle Kategorien</option>
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                {{ category.name }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn-primary sm:w-32">Suchen</button>
+    {% if query or selected_category %}
+        <a href="{% url 'book_list' %}" class="btn-ghost sm:w-32">Zurücksetzen</a>
+    {% endif %}
+</form>
+
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {% for book in books %}
+    <article class="card overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-0.5 transition duration-300">
+        <a href="{{ book.get_absolute_url }}" class="block bg-slate-100 h-64 overflow-hidden">
+            {% if book.image %}
+                <img src="{{ book.image.url }}" alt="{{ book.title }}" loading="lazy"
+                     class="w-full h-full object-cover hover:scale-105 transition duration-500">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center text-slate-400 text-sm">Kein Foto</div>
+            {% endif %}
+        </a>
+
+        <div class="p-5 flex flex-col flex-grow">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] uppercase tracking-wider text-slate-400">
+                    {{ book.category.name|default:"Ohne Kategorie" }}
+                </span>
+                {% if book.review_count %}
+                    <span class="text-[11px] text-slate-400">{{ book.review_count }} Rezension{{ book.review_count|pluralize:"en" }}</span>
+                {% endif %}
+            </div>
+
+            <h2 class="font-serif text-xl mb-2 leading-snug">
+                <a href="{{ book.get_absolute_url }}" class="hover:text-accent transition">{{ book.title }}</a>
+            </h2>
+
+            <p class="text-sm text-slate-500 leading-relaxed flex-grow">
+                {{ book.description|truncatewords:20 }}
+            </p>
+
+            <a href="{{ book.get_absolute_url }}" class="btn-outline mt-5 w-full">Mehr Details</a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="col-span-full card p-16 text-center">
+        <p class="text-slate-500">
+            {% if query or selected_category %}
+                Zu Ihrer Suche wurde nichts gefunden.
+            {% else %}
+                Bücher werden bald in der Liste erscheinen.
+            {% endif %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-10 flex justify-center items-center gap-2 text-sm">
+    {% if page_obj.has_previous %}
+        <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.previous_page_number }}"
+           class="btn-ghost">←</a>
+    {% endif %}
+
+    <span class="px-4 py-2 text-slate-500">
+        Seite {{ page_obj.number }} von {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?{% if query %}q={{ query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.next_page_number }}"
+           class="btn-ghost">→</a>
+    {% endif %}
+</nav>
+{% endif %}
+{% endblock content %}

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+{% load i18n %}
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hermann Hesse{% endblock title %}</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'accent': '#2563eb',
+                        'bg-dark': '#f8fafc',
+                        'surface': '#ffffff',
+                        'border-custom': '#cbd5e1',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                        'serif': ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --accent: #2563eb;
+            --accent-dark: #1d4ed8;
+            --surface: #ffffff;
+            --bg-dark: #f8fafc;
+            --border: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body { background-color: var(--bg-dark); color: var(--text-main); }
+
+        .blur-nav { backdrop-filter: blur(10px); background: rgba(248, 250, 252, 0.92); }
+
+        /* --- Karten --- */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+        }
+
+        /* --- Buttons --- */
+        .btn-primary,
+        .btn-outline,
+        .btn-ghost,
+        .btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.25s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #ffffff;
+            border: 1px solid var(--accent);
+        }
+        .btn-primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+
+        .btn-outline {
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: transparent;
+        }
+        .btn-outline:hover { background: var(--accent); color: #ffffff; }
+
+        .btn-ghost {
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            background: var(--surface);
+        }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-danger {
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            background: transparent;
+        }
+        .btn-danger:hover { background: #dc2626; color: #ffffff; border-color: #dc2626; }
+
+        /* --- Formulare --- */
+        .form-input {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+        .form-file {
+            width: 100%;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .form-file::file-selector-button {
+            margin-right: 0.75rem;
+            padding: 0.4rem 0.9rem;
+            border: 1px solid var(--accent);
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--accent);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* Fehlermeldungen von Django-Formularen */
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 0.35rem 0 0;
+            font-size: 0.8rem;
+            color: #dc2626;
+        }
+        .helptext { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* --- Alerts --- */
+        .alert-popup { transition: opacity 0.5s ease; }
+
+        @media (max-width: 640px) {
+            .alerts-container {
+                top: auto !important;
+                bottom: 24px;
+                right: 0 !important;
+                left: 0;
+                padding: 0 12px;
+                min-width: unset !important;
+            }
+            .alert-popup { min-width: unset !important; width: 100%; font-size: 13px; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-full font-sans">
+
+{% if messages %}
+<div class="alerts-container fixed top-20 right-5 z-[100] flex flex-col gap-3" style="min-width: 300px; max-width: 90vw;">
+    {% for message in messages %}
+    <div class="alert-popup p-4 rounded-xl border-l-4 bg-surface shadow-2xl text-sm
+        {% if message.tags == 'error' %}border-red-500 text-red-600
+        {% elif message.tags == 'success' %}border-emerald-500 text-slate-700
+        {% else %}border-accent text-slate-700{% endif %}">
+        {% if message.tags == 'error' %}⚠️ {% endif %}{{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<header class="blur-nav sticky top-0 z-50 border-b border-border-custom px-4 lg:px-10 py-3 sm:py-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <a href="{% url 'index' %}" class="font-serif text-xl sm:text-2xl text-accent tracking-wider">
+            Hermann Hesse
+        </a>
+
+        <button id="mobile-menu-btn" class="lg:hidden text-gray-700 focus:outline-none p-1" aria-label="Menü">
+            <svg id="burger-icon" class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+            <svg id="close-icon" class="w-7 h-7 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <nav class="hidden lg:flex items-center space-x-8 text-sm">
+            <a href="{% url 'index' %}" class="hover:text-accent transition">Biografie</a>
+            <a href="{% url 'book_list' %}" class="hover:text-accent transition">Bücher</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'forum' %}" class="hover:text-accent transition">Forum</a>
+                <a href="{% url 'inbox' %}" class="hover:text-accent transition relative">
+                    Nachrichten
+                    {% if unread_count %}
+                        <span class="absolute -top-2 -right-4 bg-accent text-white text-[10px] font-semibold rounded-full px-1.5 py-0.5">
+                            {{ unread_count }}
+                        </span>
+                    {% endif %}
+                </a>
+                <a href="{% url 'profile' %}" class="btn-outline">Profil</a>
+                <form action="{% url 'logout' %}" method="post" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" class="text-gray-500 hover:text-accent transition text-sm">Abmelden</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}" class="hover:text-accent transition">Anmelden</a>
+                <a href="{% url 'signup' %}" class="btn-outline">Registrieren</a>
+            {% endif %}
+        </nav>
+    </div>
+
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-border-custom mt-3 pt-2 pb-1">
+        <a href="{% url 'index' %}" class="block py-3 px-1 text-sm text-gray-600 hover:text-accent transition border-b border-border-custom/30">Biografie</a>
+        <a href="{% url 'book_list' %}" class="block py-3 px-1 text-sm text-gray-600 hover:text-accent transition border-b border-border-custom/30">Bücher</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'forum' %}" class="block py-3 px-1 text-sm text-gray-600 hover:text-accent transition border-b border-border-custom/30">Forum</a>
+            <a href="{% url 'inbox' %}" class="block py-3 px-1 text-sm text-gray-600 hover:text-accent transition border-b border-border-custom/30">
+                Nachrichten{% if unread_count %} <span class="text-accent font-semibold">({{ unread_count }})</span>{% endif %}
+            </a>
+            <a href="{% url 'profile' %}" class="block py-3 px-1 text-sm text-accent font-semibold border-b border-border-custom/30">Profil</a>
+            <form action="{% url 'logout' %}" method="post" class="py-3 px-1">
+                {% csrf_token %}
+                <button type="submit" class="text-sm text-gray-600 hover:text-accent transition">Abmelden</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}" class="block py-3 px-1 text-sm text-gray-600 hover:text-accent transition border-b border-border-custom/30">Anmelden</a>
+            <a href="{% url 'signup' %}" class="block py-3 px-1 text-sm text-accent font-semibold">Registrieren</a>
+        {% endif %}
+    </div>
+</header>
+
+<main class="flex-grow w-full max-w-7xl mx-auto px-3 sm:px-4 py-6 sm:py-10">
+    {% block content %}{% endblock content %}
+</main>
+
+<footer class="border-t border-border-custom py-6 sm:py-8 text-center text-gray-400 text-xs px-4">
+    <p class="font-serif text-base text-gray-500 mb-2">Hermann Hesse</p>
+    <p>Ein Studienprojekt über Leben und Werk des Schriftstellers (1877–1962).</p>
+</footer>
+
+<script>
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const burgerIcon = document.getElementById('burger-icon');
+    const closeIcon = document.getElementById('close-icon');
+
+    btn.addEventListener('click', () => {
+        const isHidden = menu.classList.contains('hidden');
+        menu.classList.toggle('hidden');
+        burgerIcon.classList.toggle('hidden', !isHidden);
+        closeIcon.classList.toggle('hidden', isHidden);
+    });
+
+    // Alerts nach 6 Sekunden ausblenden
+    setTimeout(() => {
+        document.querySelectorAll('.alert-popup').forEach(el => {
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500);
+        });
+    }, 6000);
+</script>
+{% block scripts %}{% endblock scripts %}
+</body>
+</html>

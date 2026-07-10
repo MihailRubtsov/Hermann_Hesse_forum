@@ -1,0 +1,158 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Profil — {{ user.username }}{% endblock title %}
+
+{% block content %}
+<div class="grid lg:grid-cols-12 gap-8">
+
+    <aside class="lg:col-span-4">
+        <div class="card p-8 text-center">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="{{ user.username }}"
+                     class="w-32 h-32 rounded-full object-cover mx-auto ring-4 ring-white shadow-lg">
+            {% else %}
+                <div class="w-32 h-32 rounded-full mx-auto bg-accent text-white flex items-center justify-center text-4xl font-serif ring-4 ring-white shadow-lg">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+
+            <h1 class="font-serif text-2xl mt-5">{{ user.username }}</h1>
+            {% if user.email %}<p class="text-xs text-slate-400 mt-1">{{ user.email }}</p>{% endif %}
+
+            <button type="button" onclick="document.getElementById('avatar-modal').classList.remove('hidden')"
+                    class="btn-outline w-full mt-6">
+                Foto ändern
+            </button>
+        </div>
+    </aside>
+
+    <section class="lg:col-span-8">
+        <div class="card overflow-hidden">
+            <div class="flex border-b border-border-custom text-sm overflow-x-auto">
+                <button data-tab="listings" class="tab-btn px-5 py-4 whitespace-nowrap border-b-2 border-accent text-accent font-medium">
+                    Meine Bücher ({{ listings.count }})
+                </button>
+                <button data-tab="reviews" class="tab-btn px-5 py-4 whitespace-nowrap border-b-2 border-transparent text-slate-500 hover:text-accent transition">
+                    Meine Rezensionen ({{ reviews.count }})
+                </button>
+                <button data-tab="threads" class="tab-btn px-5 py-4 whitespace-nowrap border-b-2 border-transparent text-slate-500 hover:text-accent transition">
+                    Meine Themen ({{ threads.count }})
+                </button>
+            </div>
+
+            <div class="p-6">
+
+                <div data-panel="listings" class="tab-panel space-y-3">
+                    {% for listing in listings %}
+                    <div class="flex items-center justify-between gap-4 p-4 rounded-lg bg-slate-50 border border-border-custom">
+                        <div>
+                            <a href="{{ listing.book.get_absolute_url }}" class="font-medium text-sm hover:text-accent transition">
+                                {{ listing.book.title }}
+                            </a>
+                            <p class="text-xs text-slate-400 mt-1">
+                                <span class="text-accent font-medium">{{ listing.price }} €</span>
+                                &middot; {{ listing.get_condition_display }}
+                            </p>
+                        </div>
+                        <form action="{% url 'delete_listing' listing.id %}" method="post"
+                              onsubmit="return confirm('Anzeige löschen?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-danger">Löschen</button>
+                        </form>
+                    </div>
+                    {% empty %}
+                    <p class="py-12 text-center text-sm text-slate-400">Sie haben noch keine Bücher zum Verkauf angeboten.</p>
+                    {% endfor %}
+                </div>
+
+                <div data-panel="reviews" class="tab-panel hidden space-y-3">
+                    {% for review in reviews %}
+                    <div class="p-4 rounded-lg bg-slate-50 border-l-4 border-accent">
+                        <div class="flex items-center justify-between gap-4">
+                            <a href="{{ review.book.get_absolute_url }}" class="font-medium text-sm hover:text-accent transition">
+                                {{ review.book.title }}
+                            </a>
+                            <span class="text-xs font-medium text-amber-600 bg-amber-50 rounded px-2 py-1">★ {{ review.rating }}</span>
+                        </div>
+                        <p class="text-sm text-slate-600 italic mt-2">{{ review.text }}</p>
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="text-xs text-slate-400">{{ review.created_at|date:"d.m.Y" }}</span>
+                            <form action="{% url 'delete_review' review.id %}" method="post"
+                                  onsubmit="return confirm('Ihre Rezension löschen?');">
+                                {% csrf_token %}
+                                <button type="submit" class="text-xs text-red-500 hover:underline">Löschen</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="py-12 text-center text-sm text-slate-400">Sie haben noch keine Rezensionen verfasst.</p>
+                    {% endfor %}
+                </div>
+
+                <div data-panel="threads" class="tab-panel hidden space-y-3">
+                    {% for thread in threads %}
+                    <div class="flex items-center justify-between gap-4 p-4 rounded-lg bg-slate-50 border border-border-custom">
+                        <div>
+                            <p class="font-medium text-sm">{{ thread.title }}</p>
+                            <p class="text-xs text-slate-400 mt-1">
+                                {{ thread.created_at|date:"d.m.Y" }} &middot; {{ thread.post_count }} Beitrag{{ thread.post_count|pluralize:",e" }}
+                            </p>
+                        </div>
+                        <a href="{% url 'thread_detail' thread.id %}" class="btn-outline shrink-0">Öffnen</a>
+                    </div>
+                    {% empty %}
+                    <p class="py-12 text-center text-sm text-slate-400">Sie haben noch keine Themen im Forum erstellt.</p>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="avatar-modal" class="hidden fixed inset-0 z-[200] flex items-center justify-center px-4"
+     onclick="if(event.target===this) this.classList.add('hidden')">
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+
+    <div class="relative w-full max-w-sm card p-6 shadow-2xl">
+        <button type="button" onclick="document.getElementById('avatar-modal').classList.add('hidden')"
+                class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 transition" aria-label="Schließen">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <h2 class="font-serif text-xl mb-5">Foto ändern</h2>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-2">Bild auswählen</label>
+                {{ form.avatar }}
+                {{ form.avatar.errors }}
+            </div>
+            <p class="text-xs text-slate-400">Empfohlen wird ein quadratisches Foto (JPG oder PNG).</p>
+            <button type="submit" class="btn-primary w-full">Speichern</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('border-accent', 'text-accent', 'font-medium');
+                b.classList.add('border-transparent', 'text-slate-500');
+            });
+            button.classList.add('border-accent', 'text-accent', 'font-medium');
+            button.classList.remove('border-transparent', 'text-slate-500');
+
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.toggle('hidden', panel.dataset.panel !== button.dataset.tab);
+            });
+        });
+    });
+</script>
+{% endblock scripts %}

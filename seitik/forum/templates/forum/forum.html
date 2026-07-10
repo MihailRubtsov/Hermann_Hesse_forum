@@ -1,0 +1,43 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Forum{% endblock title %}
+
+{% block content %}
+<div class="mb-8">
+    <p class="text-xs uppercase tracking-[0.2em] text-accent mb-2">Diskussion</p>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <h1 class="font-serif text-3xl sm:text-4xl">Forum</h1>
+        <a href="{% url 'create_thread' %}" class="btn-primary">Neues Thema</a>
+    </div>
+</div>
+
+<div class="space-y-3">
+    {% for thread in threads %}
+    <a href="{% url 'thread_detail' thread.id %}"
+       class="card p-5 block hover:border-accent hover:shadow-md transition">
+        <div class="flex items-start justify-between gap-4">
+            <h2 class="font-serif text-lg leading-snug">{{ thread.title }}</h2>
+            <span class="text-xs text-slate-400 shrink-0">{{ thread.created_at|date:"d.m.Y H:i" }}</span>
+        </div>
+        <p class="text-xs text-slate-400 mt-2">
+            {{ thread.creator.username }}
+            &middot; {{ thread.post_count }} Beitrag{{ thread.post_count|pluralize:",e" }}
+            {% if thread.last_activity %}&middot; letzte Antwort {{ thread.last_activity|date:"d.m.Y" }}{% endif %}
+        </p>
+    </a>
+    {% empty %}
+    <div class="card p-16 text-center">
+        <p class="text-slate-500 text-sm mb-6">Es gibt noch keine Themen im Forum. Seien Sie der Erste!</p>
+        <a href="{% url 'create_thread' %}" class="btn-primary">Thema erstellen</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-10 flex justify-center items-center gap-2 text-sm">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="btn-ghost">&larr;</a>{% endif %}
+    <span class="px-4 py-2 text-slate-500">Seite {{ page_obj.number }} von {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="btn-ghost">&rarr;</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock content %}

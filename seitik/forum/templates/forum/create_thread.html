@@ -1,0 +1,33 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Neues Thema{% endblock title %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <p class="text-xs uppercase tracking-[0.2em] text-accent mb-2">Forum</p>
+    <h1 class="font-serif text-3xl sm:text-4xl mb-8">Neues Thema erstellen</h1>
+
+    <div class="card p-6 sm:p-8">
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ thread_form.title.label }}</label>
+                {{ thread_form.title }}
+                {{ thread_form.title.errors }}
+            </div>
+
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ post_form.content.label }}</label>
+                {{ post_form.content }}
+                {{ post_form.content.errors }}
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-primary sm:flex-1">Thema veröffentlichen</button>
+                <a href="{% url 'forum' %}" class="btn-ghost sm:w-40">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

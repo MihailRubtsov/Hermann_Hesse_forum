@@ -1,0 +1,60 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ thread.title }}{% endblock title %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <a href="{% url 'forum' %}" class="btn-ghost mb-6">&larr; Zur Themenliste</a>
+
+    <div class="card p-6 mb-8 border-l-4 border-l-accent">
+        <h1 class="font-serif text-2xl sm:text-3xl leading-snug">{{ thread.title }}</h1>
+        <p class="text-xs text-slate-400 mt-3">
+            Erstellt von {{ thread.creator.username }} &middot; {{ thread.created_at|date:"d.m.Y H:i" }}
+        </p>
+    </div>
+
+    <h2 class="text-xs uppercase tracking-[0.2em] text-slate-400 mb-4">Beiträge</h2>
+
+    <div class="space-y-4">
+        {% for post in posts %}
+        <article class="card p-5">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-medium">
+                        {{ post.author.username|first|upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium">{{ post.author.username }}</p>
+                        <p class="text-xs text-slate-400">{{ post.created_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                </div>
+
+                {% if post.author == request.user %}
+                <form action="{% url 'delete_post' post.id %}" method="post"
+                      onsubmit="return confirm('Diese Nachricht wirklich löschen?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-danger">Löschen</button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="text-sm text-slate-600 leading-relaxed mt-4">
+                {{ post.content|linebreaks }}
+            </div>
+        </article>
+        {% empty %}
+        <p class="card p-12 text-center text-sm text-slate-400">Noch keine Beiträge.</p>
+        {% endfor %}
+    </div>
+
+    <section class="card p-6 mt-10">
+        <h2 class="font-serif text-xl mb-5">Ihre Antwort</h2>
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ post_form.content }}
+            {{ post_form.content.errors }}
+            <button type="submit" name="submit_post" class="btn-primary">Antworten</button>
+        </form>
+    </section>
+</div>
+{% endblock content %}

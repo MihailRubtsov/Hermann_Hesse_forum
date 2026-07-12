@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# .env liegt neben manage.py
+
 load_dotenv(BASE_DIR / '.env')
 
 

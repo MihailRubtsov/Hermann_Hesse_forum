@@ -5,11 +5,12 @@ from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-
+from django.contrib import messages
+from .forms import QuoteForm
 from forum.models import Thread
 
 from .forms import ListingForm, MessageForm, ProfileForm, ReviewForm
-from .models import Biography, Book, Category, Listing, Message, Profile, Review
+from .models import Biography, Book, Category, Listing, Message, Profile, Review, Quote
 
 BOOKS_PER_PAGE = 9
 
@@ -190,3 +191,34 @@ def delete_listing(request, listing_id):
     listing.delete()
     django_messages.success(request, 'Anzeige gelöscht.')
     return redirect('profile')
+
+quotes_per_page = 15
+
+@login_required
+def all_quotes(request):
+    quotes_list = Quote.objects.all().order_by('-created_at')
+    paginator = Paginator(quotes_list, quotes_per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'books/all_quotes.html', {
+        'page_obj': page_obj,
+    })
+
+
+
+@login_required
+def write_quote(request):
+    if request.method == 'POST':
+        quote_form = QuoteForm(request.POST)
+        if quote_form.is_valid():
+            quote = quote_form.save(commit=False)
+            quote.creator = request.user
+            quote.save()
+            messages.success(request, 'Ihr Zitat wurde erfolgreich veröffentlicht.')
+            return redirect('all_quotes')
+    else:
+        quote_form = QuoteForm()
+    return render(request, 'books/create_quote.html',{'quote_form': quote_form})
+        
+        

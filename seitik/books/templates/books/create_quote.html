@@ -1,0 +1,38 @@
+{% extends 'books/base.html' %}
+
+{% block title %}Neues Zitat{% endblock title %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <p class="text-xs uppercase tracking-[0.2em] text-accent mb-2">Zitate</p>
+    <h1 class="font-serif text-3xl sm:text-4xl mb-8">Neues Zitat erstellen</h1>
+
+    <div class="card p-6 sm:p-8">
+        <form method="post" class="space-y-5">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ quote_form.book.label }}</label>
+                {{ quote_form.book }}
+                {% if quote_form.book.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ quote_form.book.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+
+            <div>
+                <label class="block text-xs font-medium text-slate-500 mb-1.5">{{ quote_form.text.label }}</label>
+                {{ quote_form.text }}
+                {% if quote_form.text.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ quote_form.text.errors.as_text }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="submit" class="btn-primary sm:flex-1">Zitat veröffentlichen</button>
+                <a href="{% url 'all_quotes' %}" class="btn-ghost sm:w-40 text-center">Abbrechen</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

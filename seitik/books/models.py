@@ -138,3 +138,16 @@ class Message(models.Model):
 
     def __str__(self):
         return f'Von {self.sender} an {self.recipient}'
+
+
+class Quote(models.Model):
+    text = models.TextField(verbose_name='text of the qoute')
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Creator')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Create time')
+
+    def __str__(self):
+        return self.text
+    
+    class Meta:
+        ordering = ['-created_at']

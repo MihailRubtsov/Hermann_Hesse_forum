@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Book, Listing, Message, Profile, Review
+from .models import Book, Listing, Message, Profile, Review, Quote
 
 
 INPUT = 'form-input'
@@ -97,3 +97,21 @@ class BookForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': INPUT}),
             'image': forms.FileInput(attrs={'class': FILE, 'accept': 'image/*'}),
         }
+
+
+class QuoteForm(forms.ModelForm):
+    class Meta:
+        model = Quote
+        fields = ['text', 'book']
+        labels = {
+            'text': 'Zitat',
+            'book': 'Buch auswählen'
+        }
+        widgets = {
+            'text': forms.Textarea(attrs={'class': INPUT, 'placeholder': 'Schreiben Sie hier Ihr Lieblingszitat...','rows': 4, }),
+            'book': forms.Select(attrs={'class': INPUT})
+        }
+
+
+
+
